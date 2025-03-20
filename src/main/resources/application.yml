@@ -1,0 +1,13 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: status-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+main-server:
+  url: http://localhost:8081
