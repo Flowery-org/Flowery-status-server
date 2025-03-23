@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 @Service
 class UserStatusServiceImpl(private val userStatusRepository: UserStatusRepository) : UserStatusService {
     override fun getUserStatus(userId: String): UserStatusDto {
-        val status = userStatusRepository.getUserStatus(userId) ?: "offline"
+        val status = userStatusRepository.getUserStatus(userId) ?: throw IllegalArgumentException("User not found")
         val lastVisited = userStatusRepository.getUserLastVisited(userId) ?: LocalDateTime.now()
 
         return UserStatusDto(
@@ -22,14 +22,7 @@ class UserStatusServiceImpl(private val userStatusRepository: UserStatusReposito
         val statusMap = userStatusRepository.getUsersStatus(userIds)
 
         return userIds.associateWith { userId ->
-            val status = statusMap[userId] ?: "offline"
-            val lastVisited = userStatusRepository.getUserLastVisited(userId) ?: LocalDateTime.now()
-
-            UserStatusDto(
-                userId = userId,
-                status = status,
-                lastVisited = lastVisited
-            )
+            getUserStatus(userId)
         }
     }
 

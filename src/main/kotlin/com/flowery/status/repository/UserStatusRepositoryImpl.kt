@@ -34,7 +34,7 @@ class UserStatusRepositoryImpl : UserStatusRepository {
     override fun updateUserStatus(userId: String, lastVisited: LocalDateTime): Boolean {
         val key = generateKey(userId)
         userStatusTemplate.opsForValue().set(key, lastVisited.format(dateTimeFormatter))
-        return userStatusTemplate.expire(key, TTL_MINUTES, TimeUnit.MINUTES) ?: false
+        return userStatusTemplate.expire(key, TTL_MINUTES, TimeUnit.MINUTES)
     }
 
     override fun getUsersStatus(userIds: List<String>): Map<String, String> {

@@ -19,8 +19,12 @@ class UserStatusController(private val userStatusService: UserStatusService) {
      */
     @GetMapping
     fun getUserStatus(@RequestParam userId: String): ResponseEntity<UserStatusDto> {
-        val userStatus = userStatusService.getUserStatus(userId)
-        return ResponseEntity.ok(userStatus)
+        try {
+            val userStatus = userStatusService.getUserStatus(userId)
+            return ResponseEntity.ok(userStatus)
+        } catch (e : IllegalArgumentException) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null)
+        }
     }
 
     /**
@@ -43,10 +47,14 @@ class UserStatusController(private val userStatusService: UserStatusService) {
      */
     @PostMapping("/update")
     fun updateUserStatus(@RequestBody request: StatusUpdateRequestDto): ResponseEntity<String> {
-        val result = userStatusService.updateUserStatus(request.userId, request.timestamp)
-        return if (result) {
-            ResponseEntity.ok("User status updated")
-        } else {
+        return try{
+            val result = userStatusService.updateUserStatus(request.userId, request.timestamp)
+            if (result) {
+                ResponseEntity.ok("User status updated")
+            } else {
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found")
+            }
+        } catch (e : Exception) {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("User status update failed")
         }
     }
