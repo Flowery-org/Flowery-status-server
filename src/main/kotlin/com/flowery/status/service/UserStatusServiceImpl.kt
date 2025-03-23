@@ -7,7 +7,6 @@ import java.time.LocalDateTime
 
 @Service
 class UserStatusServiceImpl(private val userStatusRepository: UserStatusRepository) : UserStatusService {
-
     override fun getUserStatus(userId: String): UserStatusDto {
         val status = userStatusRepository.getUserStatus(userId) ?: "offline"
         val lastVisited = userStatusRepository.getUserLastVisited(userId) ?: LocalDateTime.now()

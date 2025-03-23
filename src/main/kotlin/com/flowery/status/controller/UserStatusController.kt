@@ -11,25 +11,43 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/status")
 class UserStatusController(private val userStatusService: UserStatusService) {
 
+    /**
+     * 단일 사용자 조회 Endpoint
+     *
+     * @param userId
+     * @return UserStatusDTO 이용자 온라인 상태 DTO
+     */
     @GetMapping
     fun getUserStatus(@RequestParam userId: String): ResponseEntity<UserStatusDto> {
         val userStatus = userStatusService.getUserStatus(userId)
         return ResponseEntity.ok(userStatus)
     }
 
+    /**
+     * 다중 사용자 조회 Endpoint
+     *
+     * @param List<String> userId 배열
+     * @return Map<String, UserStatusDTO> key는 userId이고, value는 이용자 온라인 상태 DTO
+     */
     @GetMapping("/batch")
     fun getBatchUserStatus(@RequestParam users: List<String>): ResponseEntity<Map<String, UserStatusDto>> {
         val userStatuses = userStatusService.getBatchUserStatus(users)
         return ResponseEntity.ok(userStatuses)
     }
 
+    /**
+     * 상태 변경 및 TTL 갱신 Endpoint
+     *
+     * @param StatusUpdateRequestDTO 이용자 상태 갱신 요청 DTO
+     * @return String 갱신 결과
+     */
     @PostMapping("/update")
-    fun updateUserStatus(@RequestBody request: StatusUpdateRequestDto): ResponseEntity<Boolean> {
+    fun updateUserStatus(@RequestBody request: StatusUpdateRequestDto): ResponseEntity<String> {
         val result = userStatusService.updateUserStatus(request.userId, request.timestamp)
         return if (result) {
-            ResponseEntity.ok(true)
+            ResponseEntity.ok("User status updated")
         } else {
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false)
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("User status update failed")
         }
     }
 }
