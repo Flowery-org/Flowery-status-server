@@ -19,8 +19,6 @@ class UserStatusServiceImpl(private val userStatusRepository: UserStatusReposito
     }
 
     override fun getBatchUserStatus(userIds: List<String>): Map<String, UserStatusDto> {
-        val statusMap = userStatusRepository.getUsersStatus(userIds)
-
         return userIds.associateWith { userId ->
             getUserStatus(userId)
         }

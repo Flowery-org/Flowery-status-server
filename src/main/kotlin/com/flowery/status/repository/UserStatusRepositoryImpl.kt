@@ -27,7 +27,7 @@ class UserStatusRepositoryImpl : UserStatusRepository {
 
     override fun getUserLastVisited(userId: String): LocalDateTime? {
         val key = generateKey(userId)
-        val lastVisitedStr = userStatusTemplate.opsForValue().get(key) as? String
+        val lastVisitedStr = userStatusTemplate.opsForValue().get(key)
         return lastVisitedStr?.let { LocalDateTime.parse(it, dateTimeFormatter) }
     }
 
