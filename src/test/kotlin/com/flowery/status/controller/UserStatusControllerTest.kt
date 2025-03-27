@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.Clock
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 
 @SpringBootTest
@@ -55,18 +56,18 @@ class UserStatusControllerTest {
     fun getUserStatus() {
         //given: 이용자 repository에 저장
         val url = "/status"
-        val userId = "00"
+        val userId = UUID.randomUUID()
         val lastVisited = LocalDateTime.now()
         userStatusRepository.updateUserStatus(userId, lastVisited)
 
         //when: 이용자 get 요청 전송
-        val result = mockMvc.perform(get(url).param("userId", userId)
+        val result = mockMvc.perform(get(url).param("userId", userId.toString())
             .accept(MediaType.APPLICATION_JSON))
 
         //status code=OK, 이용자 상태="online", lastVisited=설정시간
         result
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.userId").value(userId))
+            .andExpect(jsonPath("$.userId").value(userId.toString()))
             .andExpect(jsonPath("$.status").value("online"))
             .andExpect(jsonPath("$.lastVisited").value(lastVisited.format(DateTimeFormatter.ISO_DATE_TIME)))
     }
@@ -76,10 +77,10 @@ class UserStatusControllerTest {
     fun getBatchUserStatus() {
         //given: 이용자 한 명 repository에 저장
         val url = "/status/batch"
-        val userId = "00"
+        val userId = UUID.randomUUID()
         val lastVisited = LocalDateTime.now()
         userStatusRepository.updateUserStatus(userId, lastVisited)
-        val users = listOf(userId)
+        val users = listOf(userId.toString())
 
         //when: 이용자 리스트로 get 요청
         val result = mockMvc.perform(get(url)
@@ -89,9 +90,9 @@ class UserStatusControllerTest {
         //then: 응답받은 이용자 상태 중 첫번째 이용자 상태 확인
         result
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.00.userId").value(userId))
-            .andExpect(jsonPath("$.00.status").value("online"))
-            .andExpect(jsonPath("$.00.lastVisited").value(lastVisited.format(DateTimeFormatter.ISO_DATE_TIME)))
+            .andExpect(jsonPath("$.${userId}.userId").value(userId.toString()))
+            .andExpect(jsonPath("$.${userId}.status").value("online"))
+            .andExpect(jsonPath("$.${userId}.lastVisited").value(lastVisited.format(DateTimeFormatter.ISO_DATE_TIME)))
     }
 
     @DisplayName("updateUserStatus(): 이용자 상태 갱신에 성공한다")
@@ -99,7 +100,7 @@ class UserStatusControllerTest {
     fun updateUserStatus() {
         //given: 유저 상태 갱신
         val url = "/status/update"
-        val userId = "00"
+        val userId = UUID.randomUUID()
         val lastVisited = LocalDateTime.now()
         val requestBody = objectMapper.writeValueAsString(StatusUpdateRequestDto(userId, lastVisited))
 

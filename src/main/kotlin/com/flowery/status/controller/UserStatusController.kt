@@ -6,6 +6,7 @@ import com.flowery.status.service.UserStatusService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController
 @RequestMapping("/status")
@@ -18,7 +19,7 @@ class UserStatusController(private val userStatusService: UserStatusService) {
      * @return UserStatusDTO 이용자 온라인 상태 DTO
      */
     @GetMapping
-    fun getUserStatus(@RequestParam userId: String): ResponseEntity<UserStatusDto> {
+    fun getUserStatus(@RequestParam userId: UUID): ResponseEntity<UserStatusDto> {
         try {
             val userStatus = userStatusService.getUserStatus(userId)
             return ResponseEntity.ok(userStatus)
@@ -34,7 +35,7 @@ class UserStatusController(private val userStatusService: UserStatusService) {
      * @return Map<String, UserStatusDTO> key는 userId이고, value는 이용자 온라인 상태 DTO
      */
     @GetMapping("/batch")
-    fun getBatchUserStatus(@RequestParam users: List<String>): ResponseEntity<Map<String, UserStatusDto>> {
+    fun getBatchUserStatus(@RequestParam users: List<UUID>): ResponseEntity<Map<UUID, UserStatusDto>> {
         val userStatuses = userStatusService.getBatchUserStatus(users)
         return ResponseEntity.ok(userStatuses)
     }
