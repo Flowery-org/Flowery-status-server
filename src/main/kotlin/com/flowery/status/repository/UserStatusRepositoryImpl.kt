@@ -1,13 +1,16 @@
 package com.flowery.status.repository
 
+import com.flowery.status.temporary.TempUserStatusTemplate
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 @Repository
-class UserStatusRepositoryImpl(private val redisTemplate: RedisTemplate<String, Any>) : UserStatusRepository {
+class UserStatusRepositoryImpl : UserStatusRepository {
+    val userStatusTemplate = TempUserStatusTemplate()
 
     companion object {
         private const val USER_KEY_PREFIX = "user:"
@@ -17,29 +20,29 @@ class UserStatusRepositoryImpl(private val redisTemplate: RedisTemplate<String, 
         private val dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
     }
 
-    override fun getUserStatus(userId: String): String {
+    override fun getUserStatus(userId: UUID): String {
         val key = generateKey(userId)
-        val hasKey = redisTemplate.hasKey(key)
-        return if (hasKey == true) STATUS_ONLINE else STATUS_OFFLINE
+        val hasKey = userStatusTemplate.hasKey(key)
+        return if (hasKey) STATUS_ONLINE else STATUS_OFFLINE
     }
 
-    override fun getUserLastVisited(userId: String): LocalDateTime? {
+    override fun getUserLastVisited(userId: UUID): LocalDateTime? {
         val key = generateKey(userId)
-        val lastVisitedStr = redisTemplate.opsForValue().get(key) as? String
+        val lastVisitedStr = userStatusTemplate.opsForValue().get(key)
         return lastVisitedStr?.let { LocalDateTime.parse(it, dateTimeFormatter) }
     }
 
-    override fun updateUserStatus(userId: String, lastVisited: LocalDateTime): Boolean {
+    override fun updateUserStatus(userId: UUID, lastVisited: LocalDateTime): Boolean {
         val key = generateKey(userId)
-        redisTemplate.opsForValue().set(key, lastVisited.format(dateTimeFormatter))
-        return redisTemplate.expire(key, TTL_MINUTES, TimeUnit.MINUTES) ?: false
+        userStatusTemplate.opsForValue().set(key, lastVisited.format(dateTimeFormatter))
+        return userStatusTemplate.expire(key, TTL_MINUTES, TimeUnit.MINUTES)
     }
 
-    override fun getUsersStatus(userIds: List<String>): Map<String, String> {
+    override fun getUsersStatus(userIds: List<UUID>): Map<UUID, String> {
         return userIds.associateWith { getUserStatus(it) }
     }
 
-    private fun generateKey(userId: String): String {
+    private fun generateKey(userId: UUID): String {
         return USER_KEY_PREFIX + userId
     }
 }

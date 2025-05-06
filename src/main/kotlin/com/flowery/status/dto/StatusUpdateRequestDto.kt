@@ -1,8 +1,9 @@
 package com.flowery.status.dto
 
 import java.time.LocalDateTime
+import java.util.*
 
 data class StatusUpdateRequestDto(
-    val userId: String,
+    val userId: UUID,
     val timestamp: LocalDateTime
 )
