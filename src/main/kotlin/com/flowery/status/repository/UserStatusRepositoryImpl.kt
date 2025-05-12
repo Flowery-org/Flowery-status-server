@@ -1,7 +1,6 @@
 package com.flowery.status.repository
 
-import com.flowery.status.temporary.TempUserStatusTemplate
-import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -9,8 +8,10 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 @Repository
-class UserStatusRepositoryImpl : UserStatusRepository {
-    val userStatusTemplate = TempUserStatusTemplate()
+class UserStatusRepositoryImpl(
+    private val userStatusTemplate : StringRedisTemplate
+) : UserStatusRepository {
+    //val userStatusTemplate = TempUserStatusTemplate()
 
     companion object {
         private const val USER_KEY_PREFIX = "user:"
@@ -34,8 +35,8 @@ class UserStatusRepositoryImpl : UserStatusRepository {
 
     override fun updateUserStatus(userId: UUID, lastVisited: LocalDateTime): Boolean {
         val key = generateKey(userId)
-        userStatusTemplate.opsForValue().set(key, lastVisited.format(dateTimeFormatter))
-        return userStatusTemplate.expire(key, TTL_MINUTES, TimeUnit.MINUTES)
+        userStatusTemplate.opsForValue().set(key, lastVisited.format(dateTimeFormatter), TTL_MINUTES, TimeUnit.MINUTES)
+        return true
     }
 
     override fun getUsersStatus(userIds: List<UUID>): Map<UUID, String> {
